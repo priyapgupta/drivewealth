@@ -51,6 +51,13 @@ class ConfigServiceTest {
     }
 
     @Test
+    void isFeatureEnabled_returnsFalse_whenValueIsNotTrue() {
+        ConfigEntry entry = new ConfigEntry("feature.newCheckout", "false", 100, "test", 1L);
+        when(configRepo.findById("feature.newCheckout")).thenReturn(Optional.of(entry));
+        assertThat(configService.isFeatureEnabled("feature.newCheckout", "any-user")).isFalse();
+    }
+
+    @Test
     void isFeatureEnabled_isDeterministic_sameUserAlwaysGetsSameResult() {
         ConfigEntry entry = new ConfigEntry("feature.newCheckout", "true", 50, "test", 1L);
         when(configRepo.findById("feature.newCheckout")).thenReturn(Optional.of(entry));

@@ -1,9 +1,9 @@
 -- seed a sample config entry and corresponding audit row
 INSERT INTO CONFIG_ENTRY (config_key, config_value, rollout_percent, updated_by, updated_at, version)
-VALUES ('payments.checkout.prod.feature.newCheckout', 'true', 10, 'seed', CURRENT_TIMESTAMP, 1);
+VALUES ('feature.newCheckout', 'true', 10, 'seed', CURRENT_TIMESTAMP, 1);
 
 INSERT INTO AUDIT_ENTRY (config_key, updated_by, rollout_percent, config_value, created_at, version)
-VALUES ('payments.checkout.prod.feature.newCheckout', 'seed', 10, 'true', CURRENT_TIMESTAMP, 1);
+VALUES ('feature.newCheckout', 'seed', 10, 'true', CURRENT_TIMESTAMP, 1);
 
 -- additional sample configs
 INSERT INTO CONFIG_ENTRY (config_key, config_value, rollout_percent, updated_by, updated_at, version)

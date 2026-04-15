@@ -9,12 +9,12 @@ import java.util.Map;
 
 @RestController
 public class RootController {
-    @GetMapping("/")
-    public ResponseEntity<?> root() {
+    @GetMapping("/api/health")
+    public ResponseEntity<?> health() {
         Map<String, Object> m = new HashMap<>();
         m.put("service", "configflow-poc");
         m.put("status", "running");
-        m.put("endpoints", new String[]{"/api/demo", "/admin/configs", "/h2-console"});
+        m.put("endpoints", new String[]{"/", "/api/demo", "/api/features", "/admin/configs", "/h2-console"});
         return ResponseEntity.ok(m);
     }
 }

@@ -50,4 +50,21 @@ class DemoControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.enabled").value(false));
     }
+
+    @Test
+    void demo_allowsArbitraryFeatureKey() throws Exception {
+        when(configService.isFeatureEnabled("feature.checkout1", "dave")).thenReturn(true);
+
+        mockMvc.perform(get("/api/demo").param("userId", "dave").param("feature", "feature.checkout1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.feature").value("feature.checkout1"))
+                .andExpect(jsonPath("$.enabled").value(true));
+    }
+
+    @Test
+    void demo_rejectsNonFeatureKeys() throws Exception {
+        mockMvc.perform(get("/api/demo").param("userId", "dave").param("feature", "payments.timeoutMs"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").exists());
+    }
 }

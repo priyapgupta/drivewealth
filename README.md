@@ -19,42 +19,81 @@ Each change is tracked in an immutable audit log so you always know who changed 
 
 ## How to Build and Run
 
+The **React dashboard** is packaged as static files served at `/`. A normal **Maven build** runs `npm install` and `npm run build` in `frontend/` (via `frontend-maven-plugin`) unless you skip it.
+
 ### Prerequisites
 
-- Docker Desktop installed and running
-- Ports `8080` free on your machine
+- **Docker:** Docker Desktop, port `8080` free
+- **Local JAR:** Java 21, Maven 3.9+
+- **Optional (Vite dev server):** Node.js 20+ and npm
 
 ### Run with Docker (recommended)
 
 ```powershell
 # From the project root
-docker-compose up --build
+docker compose up --build
 ```
 
-Wait until the logs show:
+Wait until the logs show `Started ConfigFlowApplication`. Then open:
 
+- **Dashboard:** [http://localhost:8080/](http://localhost:8080/)
+- **JSON health:** [http://localhost:8080/api/health](http://localhost:8080/api/health)
+
+### Frontend-only dev (Vite)
+
+Use this when you’re actively developing the React UI and want hot reload.
+
+Prereqs:
+- Backend is running on `http://localhost:8080` (Docker or `mvn spring-boot:run`)
+
+```powershell
+cd frontend
+npm install
+npm run dev
 ```
-Started ConfigFlowApplication
-```
 
-The app is now available at `http://localhost:8080`.
+Open [http://localhost:5173](http://localhost:5173).
 
-### Run Locally (without Docker)
+Notes:
+- The Vite dev server proxies `/api`, `/admin`, and `/h2-console` to `http://localhost:8080` (see `frontend/vite.config.ts`).
+- If your backend is not on `8080`, update the proxy target in `frontend/vite.config.ts` (or set `VITE_API_BASE`).
 
-Requires Java 21 and Maven 3.9+.
+### Run locally (single JAR)
 
 ```powershell
 mvn package -DskipTests
 java -jar target/configflow-poc-0.1.0.jar
 ```
 
-### Stop the App
+Backend-only package (no dashboard in the JAR):
 
 ```powershell
-docker-compose down
+mvn package -DskipTests -Dskip.npm=true
 ```
 
-> **Note:** Do not use `docker run` directly. The correct image name built by docker-compose is `drivewealth-configflow:latest`, not `drivewealth`.
+### Local dev (hot reload)
+
+**Terminal 1 — API:**
+
+```powershell
+mvn spring-boot:run
+```
+
+**Terminal 2 — Vite (proxies `/admin` and `/api` to port 8080):**
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173).
+
+### Stop Docker
+
+```powershell
+docker compose down
+```
 
 ---
 
@@ -62,12 +101,14 @@ docker-compose down
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/` | Health check |
+| GET | `/` | React dashboard (static UI) |
+| GET | `/api/health` | JSON health / service info |
 | GET | `/admin/configs` | List all config entries |
 | GET | `/admin/config/{key}` | Get a single config by key |
 | POST | `/admin/config/{key}` | Create or update a config (upsert) |
 | GET | `/admin/audit` | View full audit trail |
-| GET | `/api/demo?userId={id}` | Check if `feature.newCheckout` is enabled for a user |
+| GET | `/api/demo?userId={id}&feature={key}` | Check if a feature is enabled for a user (defaults to `feature.newCheckout`) |
+| GET | `/api/features?userId={id}` | List all feature flags with enabled/disabled for a user |
 
 ---
 
@@ -78,7 +119,7 @@ The app seeds 4 config entries on startup via `data.sql`. You can verify them an
 ### Health Check
 
 ```powershell
-curl http://localhost:8080/
+curl http://localhost:8080/api/health
 ```
 
 ### View All Seeded Configs
@@ -91,7 +132,7 @@ Expected — 4 entries:
 
 | Key | Value | Rollout |
 |-----|-------|---------|
-| `payments.checkout.prod.feature.newCheckout` | `true` | 10% |
+| `feature.newCheckout` | `true` | 10% |
 | `payments.payments.prod.timeoutMs` | `5000` | 100% |
 | `retail.website.staging.experiment.signupColor` | `blue` | 25% |
 | `loans.backend.feature.fastPath` | `false` | 0% |
@@ -126,10 +167,16 @@ curl -X POST http://localhost:8080/admin/config/feature.newCheckout `
 ### Test the Feature Flag Per User
 
 ```powershell
-# Same userId always gets the same result
+# Same userId always gets the same result (defaults to feature.newCheckout)
 curl "http://localhost:8080/api/demo?userId=alice"
 curl "http://localhost:8080/api/demo?userId=bob"
 curl "http://localhost:8080/api/demo?userId=charlie"
+
+# Evaluate any feature key (must contain 'feature')
+curl "http://localhost:8080/api/demo?userId=alice&feature=feature.checkout1"
+
+# Get the full list of feature flags for a user
+curl "http://localhost:8080/api/features?userId=alice"
 ```
 
 Example response:

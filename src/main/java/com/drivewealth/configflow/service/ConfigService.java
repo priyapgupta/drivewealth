@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 import java.util.zip.CRC32;
 
 @Service
@@ -51,6 +52,9 @@ public class ConfigService {
     public boolean isFeatureEnabled(String key, String userId) {
         ConfigEntry e = configRepo.findById(key).orElse(null);
         if (e == null) return false;
+        // treat non-true values as disabled feature flags
+        String val = e.getValue();
+        if (val == null || !val.trim().toLowerCase(Locale.ROOT).equals("true")) return false;
         int pct = e.getRolloutPercent();
         if (pct <= 0) return false;
         if (pct >= 100) return true;
@@ -61,5 +65,15 @@ public class ConfigService {
         long v = Math.abs(crc.getValue());
         int bucket = (int)(v % 100);
         return bucket < pct;
+    }
+
+    public List<ConfigEntry> getAllFeatures() {
+        return configRepo.findAll().stream()
+                .filter(e -> {
+                    String k = e.getKey();
+                    if (k == null) return false;
+                    return k.startsWith("feature.") || k.contains(".feature.");
+                })
+                .toList();
     }
 }
