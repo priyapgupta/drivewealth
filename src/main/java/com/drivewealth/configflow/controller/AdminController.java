@@ -22,6 +22,7 @@ public class AdminController {
         int pct = req.getRolloutPercent() == null ? 0 : req.getRolloutPercent();
         String by = req.getUpdatedBy() == null ? "console" : req.getUpdatedBy();
         ConfigEntry e = configService.upsert(key, req.getValue(), pct, by);
+        throw new RuntimeException();
         return ResponseEntity.ok(e);
     }
 

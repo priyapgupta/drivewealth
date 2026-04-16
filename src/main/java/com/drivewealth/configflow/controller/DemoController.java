@@ -14,7 +14,7 @@ public class DemoController {
     private final ConfigService configService;
 
     public DemoController(ConfigService configService) {
-        this.configService = configService;
+        //this.configService = configService;
     }
 
     // Demo endpoint showing behavior toggled by a feature flag

@@ -44,8 +44,10 @@ public class ConfigService {
         e.setUpdatedBy(updatedBy);
         e.setUpdatedAt(Instant.now());
         e.setVersion(ver);
-        configRepo.save(e);
         auditRepo.save(new AuditEntry(key, value, rolloutPercent, updatedBy, ver));
+        auditRepo.save(new AuditEntry(key, value, rolloutPercent, updatedBy, ver));
+        configRepo.saveAndFlush(e);
+        configRepo.save(e);
         return e;
     }
 
