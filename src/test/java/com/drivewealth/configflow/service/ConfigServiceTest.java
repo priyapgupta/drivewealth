@@ -3,6 +3,7 @@ package com.drivewealth.configflow.service;
 import com.drivewealth.configflow.model.ConfigEntry;
 import com.drivewealth.configflow.repo.AuditEntryRepository;
 import com.drivewealth.configflow.repo.ConfigEntryRepository;
+import io.opentelemetry.api.trace.Tracer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,11 +24,14 @@ class ConfigServiceTest {
     @Mock
     private AuditEntryRepository auditRepo;
 
+    @Mock
+    private Tracer tracer;
+
     private ConfigService configService;
 
     @BeforeEach
     void setUp() {
-        configService = new ConfigService(configRepo, auditRepo);
+        configService = new ConfigService(configRepo, auditRepo, tracer);
     }
 
     @Test

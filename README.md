@@ -38,6 +38,13 @@ Wait until the logs show `Started ConfigFlowApplication`. Then open:
 
 - **Dashboard:** [http://localhost:8080/](http://localhost:8080/)
 - **JSON health:** [http://localhost:8080/api/health](http://localhost:8080/api/health)
+- **Jaeger UI:** [http://localhost:16686/](http://localhost:16686/)
+
+The app is configured to export traces to Jaeger at `http://jaeger:14250` when running in Docker. If you run the app outside Docker, it will default to `http://localhost:14250`.
+
+> Tip: open the Jaeger UI, select `configflow-poc`, run a trace search, then click a span to inspect tags like `http.method`, `config.key`, and `features.count`.
+
+> Note: Jaeger is a trace collector. OpenTelemetry can also emit metrics, but those are usually sent to a metrics backend such as Prometheus or OTLP-compatible storage rather than Jaeger.
 
 ### Frontend-only dev (Vite)
 
@@ -109,6 +116,8 @@ docker compose down
 | GET | `/admin/audit` | View full audit trail |
 | GET | `/api/demo?userId={id}&feature={key}` | Check if a feature is enabled for a user (defaults to `feature.newCheckout`) |
 | GET | `/api/features?userId={id}` | List all feature flags with enabled/disabled for a user |
+| GET | `/api/metrics/errors` | Get aggregated server error counts by path |
+| GET | `/api/metrics/latency` | Get request latency stats by path |
 
 ---
 

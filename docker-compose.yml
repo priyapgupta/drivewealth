@@ -4,5 +4,28 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=local
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
+      - OTEL_TRACES_SAMPLER=always_on
+      - OTEL_SERVICE_NAME=configflow
+    entrypoint:
+      - java
+      - -javaagent:/app/opentelemetry-javaagent.jar
+      - -jar
+      - /app/app.jar
+    depends_on:
+      - jaeger
+    restart: unless-stopped
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.52
+    ports:
+      - "16686:16686"
+      - "14250:14250"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - COLLECTOR_JAEGER_GRPC_ENABLED=true
+      - COLLECTOR_JAEGER_HTTP_ENABLED=true
     restart: unless-stopped
